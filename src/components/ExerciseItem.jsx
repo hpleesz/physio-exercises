@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { TAG_COLUMNS } from "../config.js";
 import { list } from "../search.js";
+import Tag from "./Tag.jsx";
 
 export default function ExerciseItem({ ex }) {
   const [imageOk, setImageOk] = useState(true);
   const title = ex.name || ex.instructions || "";
-  const tags = TAG_COLUMNS.flatMap((c) => list(ex[c]));
+  const tags = TAG_COLUMNS.flatMap((c) => list(ex[c]).map((v) => [c, v]));
 
   return (
     <li>
@@ -27,7 +28,7 @@ export default function ExerciseItem({ ex }) {
         <div className="body">
           {tags.length > 0 && (
             <div className="meta">
-              {tags.map((t, i) => <span className="tag" key={i}>{t}</span>)}
+              {tags.map(([c, v], i) => <Tag key={i} column={c} value={v} />)}
             </div>
           )}
           {ex.comment && <p className="comment">{ex.comment}</p>}

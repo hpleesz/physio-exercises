@@ -45,3 +45,23 @@ function termMatches(ex, term) {
 export function matchesQuery(ex, groups) {
   return !groups.length || groups.some((g) => g.every((t) => termMatches(ex, t)));
 }
+
+// How one database value is shown in a table cell: lists become "Hip, Knee".
+export const cellText = (v) => (Array.isArray(v) ? v.join(", ") : String(v ?? ""));
+
+// The values one cell offers in a column's tick-box filter. A list gives each item
+// separately ("Hip", "Knee"); an empty cell gives "", shown as "(Blanks)".
+// Image links are only "Has image" or blank — the link itself isn't useful to tick.
+export function cellValues(v, key) {
+  if (key === "image_url") return [v ? "Has image" : ""];
+  if (Array.isArray(v)) return v.length ? v.map(String) : [""];
+  return [cellText(v)];
+}
+
+// Does this exercise pass every column filter (optionally ignoring one column)?
+// filters: { body_part: Set{"Hip","Knee"}, ... } — a row passes a column if any of its values is ticked.
+export function passesColumnFilters(ex, filters, skipKey) {
+  return Object.entries(filters).every(
+    ([key, ticked]) => key === skipKey || cellValues(ex[key], key).some((v) => ticked.has(v))
+  );
+}

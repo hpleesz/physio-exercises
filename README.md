@@ -5,7 +5,7 @@ A searchable library of physio exercises. React (Vite) frontend on GitHub Pages,
 ## Settings
 
 Everything you normally change is in **`src/config.js`**: Supabase URL and key, page title,
-which filter buttons to show, and the search words for "and" / "or".
+which filter buttons to show, table columns, colours of list values, and the search words for "and" / "or".
 
 ## Publishing
 

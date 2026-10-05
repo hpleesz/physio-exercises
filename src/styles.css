@@ -16,7 +16,7 @@ h1 { font-size: 2rem; line-height: 1.15; margin: 0 0 0.25rem; }
 .lede { color: var(--muted); margin: 0 0 1.75rem; }
 
 .search {
-  width: 100%; font: inherit; font-size: 1.375rem; padding: 0.9rem 1.1rem;
+  display: block; width: 100%; font: inherit; font-size: 1.375rem; padding: 0.9rem 1.1rem;
   border: 2px solid var(--line); border-radius: 0.75rem; background: var(--surface); color: var(--ink);
 }
 .search:focus { outline: none; border-color: var(--accent); }
@@ -33,7 +33,62 @@ h1 { font-size: 2rem; line-height: 1.15; margin: 0 0 0.25rem; }
 .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--surface); }
 .chip:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 
-.count { color: var(--muted); font-size: 0.9375rem; margin: 1.5rem 0 0.5rem; }
+.count { color: var(--muted); font-size: 0.9375rem; margin: 0; }
+.count-row {
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;
+  gap: 0.5rem; margin: 1.5rem 0 0.5rem;
+}
+
+/* Table view: page widens and the table scrolls sideways if it still doesn't fit */
+main.wide { max-width: none; }
+main.wide > :not(.table-wrap) { max-width: 48rem; margin-left: auto; margin-right: auto; }
+.table-wrap {
+  overflow: auto; max-height: 80vh; border: 1px solid var(--line);
+  border-radius: 0.5rem; background: var(--surface);
+}
+table { border-collapse: collapse; font-size: 0.9375rem; width: 100%; }
+th, td { text-align: left; vertical-align: top; padding: 0.45rem 0.4rem; border-bottom: 1px solid var(--line); }
+thead th { position: sticky; background: var(--surface); white-space: nowrap; z-index: 1; }
+thead th { top: 0; box-shadow: 0 1px 0 var(--line); }
+.th-inner { display: flex; align-items: center; justify-content: space-between; gap: 0.3rem; }
+
+/* Excel-style column filter */
+.filter-btn {
+  display: inline-grid; place-items: center; width: 1.6rem; height: 1.6rem; padding: 0; cursor: pointer;
+  border: 1px solid var(--line); border-radius: 0.375rem; background: var(--bg); color: var(--muted);
+}
+.filter-btn.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.filter-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 1px; }
+.filter-panel {
+  position: fixed; z-index: 10; display: flex; flex-direction: column; gap: 0.5rem; padding: 0.6rem;
+  background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 0.5rem;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.18); font-size: 0.9375rem; font-weight: normal; white-space: normal;
+}
+.filter-search {
+  width: 100%; font: inherit; padding: 0.35rem 0.5rem; border: 1px solid var(--line);
+  border-radius: 0.375rem; background: var(--bg); color: var(--ink);
+}
+.filter-search:focus { outline: none; border-color: var(--accent); }
+.filter-list {
+  max-height: 16rem; overflow: auto; border: 1px solid var(--line); border-radius: 0.375rem; padding: 0.25rem 0;
+}
+.filter-list label {
+  display: flex; align-items: center; gap: 0.5rem; padding: 0.2rem 0.5rem; cursor: pointer;
+}
+.filter-list label:hover { background: var(--accent-soft); }
+.filter-list label span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.filter-list input { accent-color: var(--accent); flex: none; margin: 0; }
+.filter-all { border-bottom: 1px solid var(--line); margin-bottom: 0.2rem; }
+.filter-note { color: var(--muted); font-size: 0.875rem; margin: 0.3rem 0.5rem; }
+.filter-actions { display: flex; gap: 0.4rem; align-items: center; }
+.filter-actions .spacer { flex: 1; }
+.chip.primary { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.chip:disabled { opacity: 0.45; cursor: default; }
+/* Columns share the screen width and text wraps; only instructions get a little extra room */
+td.col-instructions { min-width: 14rem; }
+td.col-number, td.col-id { font-variant-numeric: tabular-nums; }
+td a { color: var(--accent); }
+td.empty { text-align: center; }
 ul { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
 li { border-bottom: 1px solid var(--line); }
 summary {
@@ -51,7 +106,7 @@ summary::-webkit-details-marker { display: none; }
 }
 .body { padding: 0 0.25rem 1.2rem 3.5rem; }
 .meta { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.75rem; }
-.tag { background: var(--accent-soft); border-radius: 0.375rem; padding: 0.1rem 0.5rem; font-size: 0.875rem; }
+.tag { background: color-mix(in srgb, var(--muted) 16%, var(--surface)); border-radius: 0.375rem; padding: 0.1rem 0.5rem; font-size: 0.875rem; }
 .comment { background: var(--note); border-radius: 0.5rem; padding: 0.5rem 0.75rem; margin: 0 0 0.75rem; }
 .body p { margin: 0 0 0.6rem; max-width: 65ch; }
 .source { color: var(--muted); font-size: 0.9375rem; }
@@ -61,3 +116,22 @@ summary::-webkit-details-marker { display: none; }
   .part { grid-column: 2; text-align: left; }
   .body { padding-left: 0.25rem; }
 }
+.thumb { display: block; max-height: 10rem; max-width: 13rem; width: auto; height: auto; border-radius: 0.375rem; background: #fff; }
+.thumb-btn { padding: 0; border: 0; background: none; cursor: zoom-in; border-radius: 0.375rem; }
+.thumb-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.lightbox { padding: 0; border: 0; border-radius: 0.5rem; background: #fff; cursor: zoom-out; max-width: 95vw; max-height: 95vh; }
+.lightbox::backdrop { background: rgb(0 0 0 / 0.75); }
+.lightbox img { display: block; max-width: 95vw; max-height: 95vh; width: auto; height: auto; }
+
+/* Colours from COLOURS in config.js: a soft tint that works in light and dark mode */
+.tag[style] {
+  background: color-mix(in srgb, var(--tag) 22%, var(--surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tag) 55%, var(--surface));
+}
+.tags { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+td .tag { white-space: nowrap; }
+.dot {
+  display: inline-block; width: 0.6rem; height: 0.6rem; border-radius: 50%;
+  background: var(--tag); margin-right: 0.4rem; flex: none;
+}
+.filter-list .dot { margin-right: 0; }

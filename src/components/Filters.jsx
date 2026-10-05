@@ -1,5 +1,6 @@
 import { FILTERS } from "../config.js";
 import { list } from "../search.js";
+import { Dot } from "./Tag.jsx";
 
 export default function Filters({ exercises, active, onChange }) {
   return FILTERS.map((f) => {
@@ -12,7 +13,9 @@ export default function Filters({ exercises, active, onChange }) {
         <div className="chips">
           <Chip on={!current} onClick={() => onChange(f.key, null)}>All</Chip>
           {values.map((v) => (
-            <Chip key={v} on={current === v} onClick={() => onChange(f.key, v)}>{v}</Chip>
+            <Chip key={v} on={current === v} onClick={() => onChange(f.key, v)}>
+              <Dot column={f.key} value={v} />{v}
+            </Chip>
           ))}
         </div>
       </div>
