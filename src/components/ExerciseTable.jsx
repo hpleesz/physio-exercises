@@ -35,7 +35,7 @@ export default function ExerciseTable({ rows, columns, colFilters, optionsFor, o
           {rows.length ? (
             rows.map((ex) => (
               <tr key={ex.id}>
-                {columns.map((c) => <td key={c} className={`col-${c}`}>{renderCell(c, ex[c], ex)}</td>)}
+                {columns.map((c) => <td key={c} className={`col-${c}`} data-label={label(c)}>{renderCell(c, ex[c], ex)}</td>)}
               </tr>
             ))
           ) : (

@@ -135,3 +135,36 @@ td .tag { white-space: nowrap; }
   background: var(--tag); margin-right: 0.4rem; flex: none;
 }
 .filter-list .dot { margin-right: 0; }
+
+/* Table view on phones: each exercise becomes a card, column filters become a row of buttons */
+@media (max-width: 40rem) {
+  .table-wrap { overflow: visible; max-height: none; border: 0; border-radius: 0; background: none; }
+  table, thead, tbody, tr, th, td { display: block; }
+  thead tr { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  thead th {
+    position: static; box-shadow: none; padding: 0.2rem 0.25rem 0.2rem 0.7rem;
+    border: 1px solid var(--line); border-radius: 999px; background: var(--surface);
+  }
+  tbody tr {
+    margin-top: 0.75rem; padding: 0.6rem 0.8rem; background: var(--surface);
+    border: 1px solid var(--line); border-radius: 0.6rem;
+  }
+  td {
+    display: grid; grid-template-columns: 6.5rem 1fr; gap: 0.6rem;
+    min-width: 0 !important; padding: 0.3rem 0; border: 0;
+  }
+  td::before { content: attr(data-label); color: var(--muted); font-size: 0.875rem; }
+  td:empty { display: none; }
+  td.col-image_url { grid-template-columns: 1fr; }
+  td.col-image_url::before { content: none; }
+  td.col-image_url .thumb-btn { width: 100%; }
+  .thumb { max-width: 100%; max-height: 12rem; margin: 0 auto; }
+  td.empty { display: block; padding: 1.5rem 0; }
+  td.empty::before { content: none; }
+  .filter-panel {
+    left: 0.5rem !important; right: 0.5rem; width: auto !important; top: 4rem !important;
+    max-height: calc(100dvh - 5rem);
+  }
+  .filter-list { max-height: none; flex: 1; min-height: 6rem; }
+  .count-row { flex-wrap: nowrap; }
+}

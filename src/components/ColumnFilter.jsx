@@ -5,6 +5,8 @@ import { Dot } from "./Tag.jsx";
 // Long columns (e.g. instructions) can have thousands of different values.
 const MAX_SHOWN = 500;
 const show = (v) => (v === "" ? "(Blanks)" : v);
+// Same width as the phone layout in styles.css.
+const isNarrow = () => window.matchMedia("(max-width: 40rem)").matches;
 
 // Excel-style column filter: a funnel button that opens a tick-box list of the column's values.
 // ticked: Set of ticked values, or undefined when the column isn't filtered.
@@ -34,8 +36,11 @@ export default function ColumnFilter({ column, label, ticked, getOptions, onAppl
   }
 
   // Close on click outside, Escape, scroll or resize (the panel is fixed to the screen).
+  // On phones the panel is a sheet that doesn't follow the button, and the on-screen
+  // keyboard scrolls and resizes the page, so only clicks outside and Escape close it.
   useEffect(() => {
     if (!open) return;
+    const narrow = isNarrow();
     const outside = (e) => {
       if (!panelRef.current?.contains(e.target) && !buttonRef.current?.contains(e.target)) setOpen(false);
     };
@@ -44,8 +49,10 @@ export default function ColumnFilter({ column, label, ticked, getOptions, onAppl
     const resize = () => setOpen(false);
     document.addEventListener("mousedown", outside);
     document.addEventListener("keydown", key);
-    document.addEventListener("scroll", scroll, true);
-    window.addEventListener("resize", resize);
+    if (!narrow) {
+      document.addEventListener("scroll", scroll, true);
+      window.addEventListener("resize", resize);
+    }
     return () => {
       document.removeEventListener("mousedown", outside);
       document.removeEventListener("keydown", key);
@@ -106,7 +113,7 @@ export default function ColumnFilter({ column, label, ticked, getOptions, onAppl
             placeholder="Search"
             aria-label={`Search ${label.toLowerCase()} values`}
             autoComplete="off"
-            autoFocus
+            autoFocus={!isNarrow()}
           />
           <div className="filter-list">
             {visible.length > 0 && (
