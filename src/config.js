@@ -30,10 +30,16 @@ export const FILTERS = [
 export const TABLE_HIDDEN = ["name", "created_at"];
 export const TABLE_AFTER_NUMBER = ["image_url", "instructions", "comment"];
 
-// Table view: columns whose tick-box filter means "I have these". An exercise only shows if
-// every need is ticked; a need like "Mat/Bed" is met by either. The listed values
-// (e.g. "None") never hide an exercise.
-export const TABLE_MATCH_ALL = { equipment: ["None"] };
+// Columns whose tick-box filter has a choice of how the ticks are used (Only / Exactly / Any;
+// see MODES in search.js). A value like "Mat/Bed" counts as either item.
+//   mode:   the mode the filter starts in
+//   ignore: values that never hide an exercise in "Only these" mode (e.g. "None")
+//   onlyLabel: a clearer name for "Only these" in this column
+//   emptyOk: an exercise with nothing filled in shows in "Only these" (no equipment = needs nothing)
+export const TABLE_MATCH_ALL = {
+    equipment: { mode: "have", ignore: ["None"], onlyLabel: "I have these", emptyOk: true },
+    body_part: { mode: "any", ignore: [] },
+};
 
 // Small coloured tags shown when an exercise is opened.
 export const TAG_COLUMNS = ["region", "type", "equipment", "area"];

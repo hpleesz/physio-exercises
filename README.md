@@ -36,6 +36,7 @@ Requires Node.js 20 or newer.
 4. `4-link-drawings.sql` – links uploaded drawings by exercise number
 5. `5-equipment-alternatives.sql` – run once on an existing database so equipment can hold
    alternatives (not needed after a fresh `1-schema.sql`)
+6. `6-saved-lists.sql` – adds saved lists (run once; on a fresh project run it after `1-schema.sql`)
 
 ## Equipment
 
@@ -45,3 +46,17 @@ Separate what an exercise needs with commas, and alternatives with `/`:
 - `Mat/Bed, Exercise ball` – needs a mat or a bed, and an exercise ball
 
 The Equipment filter in the table shows an exercise when you have something for every need.
+
+## Saved lists
+
+Log in (top right), then **My lists > New list**: tick exercises on the left, drag ⠿ to reorder,
+add a comment to each, and save. **Copy link** gives a link anyone can open to see the list;
+nobody can find a list without its link, and only you can change it.
+
+One-time setup in Supabase:
+
+1. Run `sql/6-saved-lists.sql` in the SQL editor.
+2. **Authentication > Users > Add user > Create new user**: your email and a password, with
+   "Auto confirm user" ticked.
+3. **Authentication > Sign In / Providers**: switch off **Allow new users to sign up**, so nobody
+   else can make an account.

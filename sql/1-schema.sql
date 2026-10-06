@@ -1,7 +1,7 @@
 -- Creates the database from scratch.
 -- WARNING: deletes the existing exercises table and all its data. Only run on a fresh project.
 
-drop table if exists public.exercises, public.exercises_import;
+drop table if exists public.list_items, public.lists, public.exercises, public.exercises_import;
 drop type if exists region_t, body_part_t, exercise_type_t, equipment_t, area_t, position_t;
 
 create type region_t as enum ('Upper body', 'Lower body', 'Torso');

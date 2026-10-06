@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { norm } from "../search.js";
+import { createPortal } from "react-dom";
+import { TABLE_MATCH_ALL } from "../config.js";
+import { MODES, norm } from "../search.js";
 import { Dot } from "./Tag.jsx";
 
 // Long columns (e.g. instructions) can have thousands of different values.
@@ -9,15 +11,19 @@ const show = (v) => (v === "" ? "(Blanks)" : v);
 const isNarrow = () => window.matchMedia("(max-width: 40rem)").matches;
 
 // Excel-style column filter: a funnel button that opens a tick-box list of the column's values.
-// unticked: Set of unticked values, or undefined when the column isn't filtered. Values missing
-// from the list (hidden by other filters) keep their state.
-// matchAll: "I have these" column, where an exercise needs every one of its values ticked.
-export default function ColumnFilter({ column, label, unticked, matchAll, getOptions, onApply }) {
+// filter: { unticked: Set, ticked: Set, mode }, or undefined when the column isn't filtered.
+// Values missing from the list (hidden by other filters) keep their state.
+// matchAll: equipment-style column, with a choice of MODES for how the ticks are used.
+export default function ColumnFilter({ column, label, filter, matchAll, getOptions, onApply }) {
+  const unticked = filter?.unticked;
+  const settings = TABLE_MATCH_ALL[column];
+  const startMode = settings?.mode ?? "any";
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState(null);
   const [options, setOptions] = useState([]);
   const [draft, setDraft] = useState(new Set());
   const [search, setSearch] = useState("");
+  const [mode, setMode] = useState(startMode);
   const buttonRef = useRef(null);
   const panelRef = useRef(null);
 
@@ -27,8 +33,16 @@ export default function ColumnFilter({ column, label, unticked, matchAll, getOpt
     const width = Math.min(288, window.innerWidth - 16);
     setOptions(opts);
     setDraft(new Set(opts.filter((v) => !unticked?.has(v))));
+    setMode(filter?.mode ?? startMode);
     setSearch("");
-    setPos({ top: r.bottom + 4, left: Math.max(8, Math.min(r.left, window.innerWidth - width - 8)), width });
+    const left = Math.max(8, Math.min(r.left, window.innerWidth - width - 8));
+    // Open below the button, or above it if there's clearly more room there; either way, fit the
+    // screen (the value list shrinks and scrolls, so OK stays in view).
+    const below = window.innerHeight - r.bottom - 12;
+    const above = r.top - 12;
+    setPos(below < 360 && above > below
+      ? { left, width, bottom: window.innerHeight - r.top + 4, maxHeight: above }
+      : { left, width, top: r.bottom + 4, maxHeight: below });
     setOpen(true);
   }
 
@@ -83,10 +97,21 @@ export default function ColumnFilter({ column, label, unticked, matchAll, getOpt
     setDraft(next);
   }
 
+  // "Exactly" and "Any" usually mean picking one or two items, so start those from nothing ticked.
+  function changeMode(m) {
+    if (m !== "have" && options.every((v) => draft.has(v))) setDraft(new Set());
+    setMode(m);
+  }
+
   function apply() {
-    const next = new Set([...(unticked ?? [])].filter((v) => !options.includes(v)));
-    options.forEach((v) => !result.includes(v) && next.add(v));
-    onApply(next.size ? next : null);
+    const nextUnticked = new Set([...(unticked ?? [])].filter((v) => !options.includes(v)));
+    options.forEach((v) => !result.includes(v) && nextUnticked.add(v));
+    const nextTicked = new Set([...(filter?.ticked ?? [])].filter((v) => !options.includes(v)));
+    result.forEach((v) => nextTicked.add(v));
+    const m = matchAll ? mode : undefined;
+    // With everything ticked, only "Exactly these" still hides anything; otherwise clear the filter.
+    const hidesNothing = nextUnticked.size === 0 && m !== "exact";
+    onApply(hidesNothing ? null : { unticked: nextUnticked, ticked: nextTicked, mode: m });
     close();
   }
 
@@ -94,23 +119,36 @@ export default function ColumnFilter({ column, label, unticked, matchAll, getOpt
     <>
       <button
         ref={buttonRef}
-        className={`filter-btn${unticked ? " on" : ""}`}
+        className={`filter-btn${filter ? " on" : ""}`}
         onClick={() => (open ? close() : openPanel())}
-        aria-label={`Filter ${label.toLowerCase()}${unticked ? " (filtered)" : ""}`}
+        aria-label={`Filter ${label.toLowerCase()}${filter ? " (filtered)" : ""}`}
         aria-expanded={open}
-        title={unticked ? "Filtered" : "Filter"}
+        title={filter ? "Filtered" : "Filter"}
       >
         <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
-          <path d="M1.5 2.5h13l-5 6v5l-3-1.5v-3.5z" fill={unticked ? "currentColor" : "none"}
+          <path d="M1.5 2.5h13l-5 6v5l-3-1.5v-3.5z" fill={filter ? "currentColor" : "none"}
                 stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
         </svg>
       </button>
 
-      {open && (
+      {/* Drawn straight on the page, so table headers and other boxes can't cover it */}
+      {open && createPortal(
         <div ref={panelRef} className="filter-panel" role="dialog" aria-label={`Filter ${label.toLowerCase()}`}
-             style={{ top: pos.top, left: pos.left, width: pos.width }}>
+             style={pos}>
           {matchAll && (
-            <p className="filter-note">Tick what you have. For “Mat or Bed”, either one is enough.</p>
+            <fieldset className="filter-modes">
+              <legend>Show exercises that…</legend>
+              {MODES.map((m) => (
+                <label key={m.key}>
+                  <input type="radio" name={`mode-${column}`} checked={mode === m.key}
+                         onChange={() => changeMode(m.key)} />
+                  <span>
+                    <b>{m.key === "have" && settings?.onlyLabel ? settings.onlyLabel : m.label}</b>
+                    <span className="filter-note">{m.hint}</span>
+                  </span>
+                </label>
+              ))}
+            </fieldset>
           )}
           <input
             type="search"
@@ -147,14 +185,15 @@ export default function ColumnFilter({ column, label, unticked, matchAll, getOpt
             {!visible.length && <p className="filter-note">No matches.</p>}
           </div>
           <div className="filter-actions">
-            {unticked && (
+            {filter && (
               <button className="chip" onClick={() => { onApply(null); close(); }}>Clear filter</button>
             )}
             <span className="spacer" />
             <button className="chip" onClick={close}>Cancel</button>
-            <button className="chip primary" onClick={apply} disabled={!result.length && !matchAll}>OK</button>
+            <button className="chip primary" onClick={apply} disabled={!result.length && (!matchAll || mode !== "have")}>OK</button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
