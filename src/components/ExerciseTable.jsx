@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { TABLE_MATCH_ALL } from "../config.js";
 import { cellText } from "../search.js";
 import ColumnFilter from "./ColumnFilter.jsx";
 import Tag from "./Tag.jsx";
@@ -22,7 +23,8 @@ export default function ExerciseTable({ rows, columns, colFilters, optionsFor, o
                   <ColumnFilter
                     column={c}
                     label={label(c)}
-                    ticked={colFilters[c]}
+                    unticked={colFilters[c]}
+                    matchAll={c in TABLE_MATCH_ALL}
                     getOptions={() => optionsFor(c)}
                     onApply={(set) => onFilterChange(c, set)}
                   />

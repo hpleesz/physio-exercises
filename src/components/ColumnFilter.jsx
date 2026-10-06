@@ -9,8 +9,10 @@ const show = (v) => (v === "" ? "(Blanks)" : v);
 const isNarrow = () => window.matchMedia("(max-width: 40rem)").matches;
 
 // Excel-style column filter: a funnel button that opens a tick-box list of the column's values.
-// ticked: Set of ticked values, or undefined when the column isn't filtered.
-export default function ColumnFilter({ column, label, ticked, getOptions, onApply }) {
+// unticked: Set of unticked values, or undefined when the column isn't filtered. Values missing
+// from the list (hidden by other filters) keep their state.
+// matchAll: "I have these" column, where an exercise needs every one of its values ticked.
+export default function ColumnFilter({ column, label, unticked, matchAll, getOptions, onApply }) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState(null);
   const [options, setOptions] = useState([]);
@@ -24,7 +26,7 @@ export default function ColumnFilter({ column, label, ticked, getOptions, onAppl
     const r = buttonRef.current.getBoundingClientRect();
     const width = Math.min(288, window.innerWidth - 16);
     setOptions(opts);
-    setDraft(new Set(ticked ? opts.filter((v) => ticked.has(v)) : opts));
+    setDraft(new Set(opts.filter((v) => !unticked?.has(v))));
     setSearch("");
     setPos({ top: r.bottom + 4, left: Math.max(8, Math.min(r.left, window.innerWidth - width - 8)), width });
     setOpen(true);
@@ -82,7 +84,9 @@ export default function ColumnFilter({ column, label, ticked, getOptions, onAppl
   }
 
   function apply() {
-    onApply(result.length === options.length ? null : new Set(result));
+    const next = new Set([...(unticked ?? [])].filter((v) => !options.includes(v)));
+    options.forEach((v) => !result.includes(v) && next.add(v));
+    onApply(next.size ? next : null);
     close();
   }
 
@@ -90,14 +94,14 @@ export default function ColumnFilter({ column, label, ticked, getOptions, onAppl
     <>
       <button
         ref={buttonRef}
-        className={`filter-btn${ticked ? " on" : ""}`}
+        className={`filter-btn${unticked ? " on" : ""}`}
         onClick={() => (open ? close() : openPanel())}
-        aria-label={`Filter ${label.toLowerCase()}${ticked ? " (filtered)" : ""}`}
+        aria-label={`Filter ${label.toLowerCase()}${unticked ? " (filtered)" : ""}`}
         aria-expanded={open}
-        title={ticked ? "Filtered" : "Filter"}
+        title={unticked ? "Filtered" : "Filter"}
       >
         <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
-          <path d="M1.5 2.5h13l-5 6v5l-3-1.5v-3.5z" fill={ticked ? "currentColor" : "none"}
+          <path d="M1.5 2.5h13l-5 6v5l-3-1.5v-3.5z" fill={unticked ? "currentColor" : "none"}
                 stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
         </svg>
       </button>
@@ -105,6 +109,9 @@ export default function ColumnFilter({ column, label, ticked, getOptions, onAppl
       {open && (
         <div ref={panelRef} className="filter-panel" role="dialog" aria-label={`Filter ${label.toLowerCase()}`}
              style={{ top: pos.top, left: pos.left, width: pos.width }}>
+          {matchAll && (
+            <p className="filter-note">Tick what you have. For “Mat or Bed”, either one is enough.</p>
+          )}
           <input
             type="search"
             className="filter-search"
@@ -140,12 +147,12 @@ export default function ColumnFilter({ column, label, ticked, getOptions, onAppl
             {!visible.length && <p className="filter-note">No matches.</p>}
           </div>
           <div className="filter-actions">
-            {ticked && (
+            {unticked && (
               <button className="chip" onClick={() => { onApply(null); close(); }}>Clear filter</button>
             )}
             <span className="spacer" />
             <button className="chip" onClick={close}>Cancel</button>
-            <button className="chip primary" onClick={apply} disabled={!result.length}>OK</button>
+            <button className="chip primary" onClick={apply} disabled={!result.length && !matchAll}>OK</button>
           </div>
         </div>
       )}

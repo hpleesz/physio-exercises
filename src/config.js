@@ -22,13 +22,18 @@ export const SITE_INTRO =
 // Possible keys: region, body_part, type, equipment, area
 export const FILTERS = [
     { key: "body_part", label: "Body part" },
+    { key: "position", label: "Position" },
     { key: "area", label: "Area" },
 ];
-
 // Table view: columns not shown, and columns moved to come straight after "number"
 // (in this order). All other database columns follow in their database order.
 export const TABLE_HIDDEN = ["name", "created_at"];
 export const TABLE_AFTER_NUMBER = ["image_url", "instructions", "comment"];
+
+// Table view: columns whose tick-box filter means "I have these". An exercise only shows if
+// every need is ticked; a need like "Mat/Bed" is met by either. The listed values
+// (e.g. "None") never hide an exercise.
+export const TABLE_MATCH_ALL = { equipment: ["None"] };
 
 // Small coloured tags shown when an exercise is opened.
 export const TAG_COLUMNS = ["region", "type", "equipment", "area"];

@@ -168,3 +168,10 @@ td .tag { white-space: nowrap; }
   .filter-list { max-height: none; flex: 1; min-height: 6rem; }
   .count-row { flex-wrap: nowrap; }
 }
+
+/* Equipment alternatives, e.g. "Mat/Bed": tags grouped with "or" between them */
+.tag-alt {
+  display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0.25rem;
+  padding: 0.1rem 0.2rem; border: 1px dashed var(--line); border-radius: 0.5rem;
+}
+.tag-alt .or { color: var(--muted); font-size: 0.8125rem; }

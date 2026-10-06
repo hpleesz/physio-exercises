@@ -2,7 +2,7 @@
 -- WARNING: deletes the existing exercises table and all its data. Only run on a fresh project.
 
 drop table if exists public.exercises, public.exercises_import;
-drop type if exists region_t, body_part_t, exercise_type_t, equipment_t, area_t;
+drop type if exists region_t, body_part_t, exercise_type_t, equipment_t, area_t, position_t;
 
 create type region_t as enum ('Upper body', 'Lower body', 'Torso');
 
@@ -18,12 +18,25 @@ create type equipment_t as enum (
   'None', 'Small ball', 'Exercise ball', 'Egg ball', 'Resistance band',
   'Mini band', 'Dumbbell', 'Ankle weight', 'Chair', 'Foam roller', 'Foam bar',
   'Yoga block', 'Wooden stick', 'Wand', 'Step', 'Dynair', 'Bosu',
-  'Balance pad', 'Stress ball'
+  'Balance pad', 'Stress ball', 'Bed', 'Wall bars', 'Mat'
 );
+
+-- Equipment is a list of needs. A need is one item ("Chair") or alternatives ("Mat/Bed").
+-- True if every item named is in equipment_t.
+create or replace function equipment_ok(e text[]) returns boolean
+language sql stable as $$
+  select coalesce(bool_and(trim(p) = any(enum_range(null::equipment_t)::text[])), true)
+  from unnest(e) x, unnest(string_to_array(x, '/')) p
+$$;
 
 create type area_t as enum (
   'Cardiology', 'Rheumatology', 'Orthopaedics', 'Neurology',
   'Pulmonology', 'Geriatrics', 'Sports'
+);
+
+create type position_t as enum (
+  'Lying on back', 'Lying on front', 'Lying on side',
+  'All fours', 'Kneeling', 'Half kneeling', 'Sitting', 'Standing'
 );
 
 create table public.exercises (
@@ -33,12 +46,13 @@ create table public.exercises (
   region       region_t[]        not null default '{}',
   body_part    body_part_t[]     not null default '{}',
   type         exercise_type_t[] not null default '{}',
-  equipment    equipment_t[]     not null default '{}',
+  equipment    text[]            not null default '{}' check (equipment_ok(equipment)),
   area         area_t[]          not null default '{}',
   source       text,
   comment      text,
   instructions text,
   image_url    text,
+  position     position_t[]      not null default '{}',
   created_at   timestamptz not null default now()
 );
 
@@ -50,7 +64,7 @@ create policy "Public can read exercises"
 create table public.exercises_import (
   number text, name text, region text, body_part text, type text,
   equipment text, area text, source text, comment text,
-  instructions text, image_url text
+  instructions text, image_url text, position text
 );
 alter table public.exercises_import enable row level security;
 

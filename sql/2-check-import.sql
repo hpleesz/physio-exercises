@@ -6,7 +6,10 @@ union all select number, 'body_part', v from exercises_import, unnest(to_list(bo
   where v <> all(enum_range(null::body_part_t)::text[])
 union all select number, 'type', v from exercises_import, unnest(to_list(type)) v
   where v <> all(enum_range(null::exercise_type_t)::text[])
-union all select number, 'equipment', v from exercises_import, unnest(to_list(equipment)) v
-  where v <> all(enum_range(null::equipment_t)::text[])
+union all select number, 'equipment', trim(p) from exercises_import, unnest(to_list(equipment)) v,
+  unnest(string_to_array(v, '/')) p  -- "Mat/Bed" is checked as Mat and Bed
+  where trim(p) <> all(enum_range(null::equipment_t)::text[])
 union all select number, 'area', v from exercises_import, unnest(to_list(area)) v
-  where v <> all(enum_range(null::area_t)::text[]);
+  where v <> all(enum_range(null::area_t)::text[])
+union all select number, 'position', v from exercises_import, unnest(to_list(position)) v
+  where v <> all(enum_range(null::position_t)::text[]);

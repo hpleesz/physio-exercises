@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { FILTERS, SITE_TITLE, SITE_INTRO, TABLE_AFTER_NUMBER, TABLE_HIDDEN } from "./config.js";
 import { loadExercises } from "./supabase.js";
-import { cellValues, list, matchesQuery, parseQuery, passesColumnFilters, searchText } from "./search.js";
+import { alwaysOk, cellValues, list, matchesQuery, parseQuery, passesColumnFilters, searchText } from "./search.js";
 import SearchBox from "./components/SearchBox.jsx";
 import Filters from "./components/Filters.jsx";
 import ExerciseItem from "./components/ExerciseItem.jsx";
@@ -14,7 +14,7 @@ export default function App() {
   const [query, setQuery] = useState("");
   const [active, setActive] = useState({}); // e.g. { body_part: "Knee" }
   const [view, setView] = useState("table"); // table | list
-  const [colFilters, setColFilters] = useState({}); // e.g. { body_part: Set{"Hip","Knee"} }, table view only
+  const [colFilters, setColFilters] = useState({}); // unticked values, e.g. { equipment: Set{"Bosu"} }; table view only
 
   useEffect(() => {
     document.title = SITE_TITLE;
@@ -60,7 +60,8 @@ export default function App() {
   // Values offered in one column's tick-box list: like Excel, only those left by the other filters.
   const optionsFor = (key) => {
     const rows = searched.filter((ex) => passesColumnFilters(ex, colFilters, key));
-    return [...new Set(rows.flatMap((ex) => cellValues(ex[key], key)))].sort((a, b) =>
+    const values = rows.flatMap((ex) => cellValues(ex[key], key)).filter((v) => !alwaysOk(key, v));
+    return [...new Set(values)].sort((a, b) =>
       a === "" ? 1 : b === "" ? -1 : a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" })
     );
   };
@@ -96,8 +97,8 @@ export default function App() {
           columns={columns}
           colFilters={colFilters}
           optionsFor={optionsFor}
-          onFilterChange={(key, ticked) =>
-            setColFilters(({ [key]: _, ...rest }) => (ticked ? { ...rest, [key]: ticked } : rest))
+          onFilterChange={(key, unticked) =>
+            setColFilters(({ [key]: _, ...rest }) => (unticked ? { ...rest, [key]: unticked } : rest))
           }
         />
       )}

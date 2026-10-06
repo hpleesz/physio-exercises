@@ -34,3 +34,14 @@ Requires Node.js 20 or newer.
 2. `2-check-import.sql` – after importing a CSV into `exercises_import`, lists typos
 3. `3-copy-import.sql` – moves the import into `exercises`
 4. `4-link-drawings.sql` – links uploaded drawings by exercise number
+5. `5-equipment-alternatives.sql` – run once on an existing database so equipment can hold
+   alternatives (not needed after a fresh `1-schema.sql`)
+
+## Equipment
+
+Separate what an exercise needs with commas, and alternatives with `/`:
+
+- `Resistance band, Chair` – needs both
+- `Mat/Bed, Exercise ball` – needs a mat or a bed, and an exercise ball
+
+The Equipment filter in the table shows an exercise when you have something for every need.
