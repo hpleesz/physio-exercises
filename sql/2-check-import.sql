@@ -4,6 +4,8 @@ select number, 'region' col, v from exercises_import, unnest(to_list(region)) v
   where v <> all(enum_range(null::region_t)::text[])
 union all select number, 'body_part', v from exercises_import, unnest(to_list(body_part)) v
   where v <> all(enum_range(null::body_part_t)::text[])
+union all select number, 'body_part_other', v from exercises_import, unnest(to_list(body_part_other)) v
+  where v <> all(enum_range(null::body_part_t)::text[])
 union all select number, 'type', v from exercises_import, unnest(to_list(type)) v
   where v <> all(enum_range(null::exercise_type_t)::text[])
 union all select number, 'equipment', trim(p) from exercises_import, unnest(to_list(equipment)) v,

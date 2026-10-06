@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { FILTERS } from "./config.js";
-import { alwaysOk, cellValues, list, matchesQuery, parseQuery, passesColumnFilters } from "./search.js";
+import { alwaysOk, cellValues, list, matchesQuery, parseQuery, passesColumnFilters, valuesWithOther } from "./search.js";
 
 // Search box + filter buttons + tick-box column filters, used by the library and the list editor.
 // Each place that calls this gets its own, separate filter settings.
@@ -29,7 +29,8 @@ export function useExerciseFilters(exercises) {
   // Values offered in one column's tick-box list: like Excel, only those left by the other filters.
   const optionsFor = (key) => {
     const rows = searched.filter((ex) => passesColumnFilters(ex, colFilters, key));
-    const values = rows.flatMap((ex) => cellValues(ex[key], key)).filter((v) => !alwaysOk(key, v));
+    // Includes "other" values (e.g. other body parts) so they can be ticked too.
+    const values = rows.flatMap((ex) => cellValues(valuesWithOther(ex, key, true), key)).filter((v) => !alwaysOk(key, v));
     return [...new Set(values)].sort((a, b) =>
       a === "" ? 1 : b === "" ? -1 : a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" })
     );

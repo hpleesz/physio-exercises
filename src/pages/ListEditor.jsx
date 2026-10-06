@@ -7,7 +7,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { TABLE_MATCH_ALL } from "../config.js";
-import { deleteList, loadList, saveList } from "../supabase.js";
+import { deleteList, loadOwnList, loadTags, saveList } from "../supabase.js";
 import { titleOf } from "../search.js";
 import { columnLabel } from "../columns.js";
 import { useExerciseFilters } from "../useExerciseFilters.js";
@@ -15,12 +15,16 @@ import CopyLinkButton from "../components/CopyLinkButton.jsx";
 import ColumnFilter from "../components/ColumnFilter.jsx";
 import ExerciseDetails from "../components/ExerciseDetails.jsx";
 import Filters from "../components/Filters.jsx";
+import TagInput from "../components/TagInput.jsx";
 
 // Make or edit a list: tick exercises on the left, then drag to reorder and add comments on the right.
 // id = null for a new list. columns: the columns offered as filters and shown on opened cards.
 export default function ListEditor({ id, exercises, status, columns }) {
   const [listId, setListId] = useState(id); // set after a new list's first save
   const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [tags, setTags] = useState([]);
+  const [savedTags, setSavedTags] = useState([]); // your saved tags [{ name, colour }], as suggestions
   const [items, setItems] = useState([]); // [{ exercise_id, comment }], in order
   const [loading, setLoading] = useState(Boolean(id));
   const [saving, setSaving] = useState(false);
@@ -36,16 +40,22 @@ export default function ListEditor({ id, exercises, status, columns }) {
   useEffect(() => {
     document.title = id ? "Edit list" : "New list";
     if (!id) return;
-    loadList(id)
+    loadOwnList(id)
       .then((l) => {
         if (!l) throw new Error("This list doesn't exist.");
         setName(l.name);
+        setDescription(l.description ?? "");
+        setTags(l.tags ?? []);
         setItems(l.items);
         document.title = `Edit: ${l.name}`;
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, [id]);
+
+  useEffect(() => {
+    loadTags().then(setSavedTags).catch(() => {}); // suggestions and colours are only a convenience
+  }, []);
 
   // Warn before closing the tab with unsaved changes.
   useEffect(() => {
@@ -81,7 +91,7 @@ export default function ListEditor({ id, exercises, status, columns }) {
     setSaving(true);
     setError("");
     try {
-      const savedId = await saveList(listId, name.trim(), items);
+      const savedId = await saveList(listId, { name: name.trim(), description, tags, items });
       setDirty(false);
       setMessage("Saved");
       if (!listId) {
@@ -164,6 +174,18 @@ export default function ListEditor({ id, exercises, status, columns }) {
             <input value={name} onChange={(e) => { setName(e.target.value); setDirty(true); setMessage(""); }}
                    placeholder="e.g. Knee – week 1" />
           </label>
+          <label className="name-field">
+            <span>Description <span className="quiet-note">(only you see this)</span></span>
+            <textarea rows={2} value={description}
+                      onChange={(e) => { setDescription(e.target.value); setDirty(true); setMessage(""); }}
+                      placeholder="What the list is for, who it suits, how to progress…" />
+          </label>
+          <div className="name-field">
+            <span id="tags-head">Tags <span className="quiet-note">(only you see these)</span></span>
+            <TagInput labelledBy="tags-head" tags={tags} suggestions={savedTags.map((t) => t.name)}
+                      colours={new Map(savedTags.map((t) => [t.name, t.colour]))}
+                      onChange={(t) => { setTags(t); setDirty(true); setMessage(""); }} />
+          </div>
 
           {items.length === 0 ? (
             <p className="empty">Tick exercises on the left to add them here.</p>

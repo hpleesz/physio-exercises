@@ -44,7 +44,8 @@ create table public.exercises (
   number       integer unique,
   name         text,
   region       region_t[]        not null default '{}',
-  body_part    body_part_t[]     not null default '{}',
+  body_part    body_part_t[]     not null default '{}',  -- main body parts
+  body_part_other body_part_t[]  not null default '{}',  -- also involved
   type         exercise_type_t[] not null default '{}',
   equipment    text[]            not null default '{}' check (equipment_ok(equipment)),
   area         area_t[]          not null default '{}',
@@ -62,7 +63,7 @@ create policy "Public can read exercises"
 
 -- Plain-text table that CSV files are imported into (hidden from the website)
 create table public.exercises_import (
-  number text, name text, region text, body_part text, type text,
+  number text, name text, region text, body_part text, body_part_other text, type text,
   equipment text, area text, source text, comment text,
   instructions text, image_url text, position text
 );

@@ -1,4 +1,4 @@
-import { OR_WORDS, AND_WORDS, TABLE_MATCH_ALL } from "./config.js";
+import { OR_WORDS, AND_WORDS, TABLE_MATCH_ALL, TABLE_SECONDARY } from "./config.js";
 
 export const list = (v) => (Array.isArray(v) ? v : []);
 
@@ -14,7 +14,7 @@ export function searchText(ex) {
     return norm(
         [
             ex.number, ex.name,
-            ...list(ex.region), ...list(ex.body_part), ...list(ex.type),
+            ...list(ex.region), ...list(ex.body_part), ...list(ex.body_part_other), ...list(ex.type),
             ...list(ex.equipment), ...list(ex.area), ...list(ex.position),
             ex.source, ex.comment, ex.instructions,
         ].join(" ")
@@ -80,16 +80,21 @@ export const MODES = [
     { key: "have", label: "Only these", hint: "Has nothing that isn't ticked" },
 ];
 
+// A column's values, plus its TABLE_SECONDARY column's values when asked to count those too.
+export const valuesWithOther = (ex, key, withOther) =>
+    withOther && TABLE_SECONDARY[key] ? [...list(ex[key]), ...list(ex[TABLE_SECONDARY[key]])] : ex[key];
+
 // Does this exercise pass every column filter (optionally ignoring one column)?
-// filters: { body_part: { unticked: Set, ticked: Set, mode }, ... }
+// filters: { body_part: { unticked: Set, ticked: Set, mode, withOther }, ... }
 // Normally a row passes if any of its values is ticked. TABLE_MATCH_ALL columns use the mode above,
 // and a need like "Mat/Bed" counts as either item.
 export function passesColumnFilters(ex, filters, skipKey) {
-    return Object.entries(filters).every(([key, { unticked, ticked, mode }]) => {
+    return Object.entries(filters).every(([key, { unticked, ticked, mode, withOther }]) => {
         if (key === skipKey) return true;
-        if (!(key in TABLE_MATCH_ALL)) return cellValues(ex[key], key).some((v) => !unticked.has(v));
+        const value = valuesWithOther(ex, key, withOther);
+        if (!(key in TABLE_MATCH_ALL)) return cellValues(value, key).some((v) => !unticked.has(v));
 
-        const needs = list(ex[key]).map(alternatives);
+        const needs = list(value).map(alternatives);
         const uses = (item) => needs.some((alts) => alts.includes(item));
         const have = (needs.length > 0 || TABLE_MATCH_ALL[key].emptyOk) && needs.every((alts) => alts.some((v) => alwaysOk(key, v) || !unticked.has(v)));
         const m = mode ?? TABLE_MATCH_ALL[key].mode;

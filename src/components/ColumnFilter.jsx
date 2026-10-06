@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { TABLE_MATCH_ALL } from "../config.js";
+import { SECONDARY_LABELS, TABLE_MATCH_ALL, TABLE_SECONDARY } from "../config.js";
 import { MODES, norm } from "../search.js";
 import { Dot } from "./Tag.jsx";
 
@@ -24,6 +24,7 @@ export default function ColumnFilter({ column, label, filter, matchAll, getOptio
   const [draft, setDraft] = useState(new Set());
   const [search, setSearch] = useState("");
   const [mode, setMode] = useState(startMode);
+  const [withOther, setWithOther] = useState(false); // also count e.g. other body parts
   const buttonRef = useRef(null);
   const panelRef = useRef(null);
 
@@ -34,6 +35,7 @@ export default function ColumnFilter({ column, label, filter, matchAll, getOptio
     setOptions(opts);
     setDraft(new Set(opts.filter((v) => !unticked?.has(v))));
     setMode(filter?.mode ?? startMode);
+    setWithOther(filter?.withOther ?? false);
     setSearch("");
     const left = Math.max(8, Math.min(r.left, window.innerWidth - width - 8));
     // Open below the button, or above it if there's clearly more room there; either way, fit the
@@ -111,7 +113,7 @@ export default function ColumnFilter({ column, label, filter, matchAll, getOptio
     const m = matchAll ? mode : undefined;
     // With everything ticked, only "Exactly these" still hides anything; otherwise clear the filter.
     const hidesNothing = nextUnticked.size === 0 && m !== "exact";
-    onApply(hidesNothing ? null : { unticked: nextUnticked, ticked: nextTicked, mode: m });
+    onApply(hidesNothing ? null : { unticked: nextUnticked, ticked: nextTicked, mode: m, withOther });
     close();
   }
 
@@ -135,6 +137,12 @@ export default function ColumnFilter({ column, label, filter, matchAll, getOptio
       {open && createPortal(
         <div ref={panelRef} className="filter-panel" role="dialog" aria-label={`Filter ${label.toLowerCase()}`}
              style={pos}>
+          {TABLE_SECONDARY[column] && (
+            <label className="filter-other">
+              <input type="checkbox" checked={withOther} onChange={(e) => setWithOther(e.target.checked)} />
+              {SECONDARY_LABELS[column] ?? "Also count the others"}
+            </label>
+          )}
           {matchAll && (
             <fieldset className="filter-modes">
               <legend>Show exercises that…</legend>

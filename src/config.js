@@ -41,6 +41,11 @@ export const TABLE_MATCH_ALL = {
     body_part: { mode: "any", ignore: [] },
 };
 
+// A column whose cell also shows a second column's values, as lighter "also involved" tags.
+// Its filter gets a tick box to count those too.
+export const TABLE_SECONDARY = { body_part: "body_part_other" };
+export const SECONDARY_LABELS = { body_part: "Also count other body parts" };
+
 // Small coloured tags shown when an exercise is opened.
 export const TAG_COLUMNS = ["region", "type", "equipment", "area"];
 

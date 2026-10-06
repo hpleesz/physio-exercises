@@ -37,6 +37,12 @@ Requires Node.js 20 or newer.
 5. `5-equipment-alternatives.sql` – run once on an existing database so equipment can hold
    alternatives (not needed after a fresh `1-schema.sql`)
 6. `6-saved-lists.sql` – adds saved lists (run once; on a fresh project run it after `1-schema.sql`)
+7. `7-other-body-parts.sql` – run once on an existing database to add `body_part_other`
+   (body parts also involved, besides the main ones in `body_part`)
+8. `8-reorder-columns.sql` – optional: moves `body_part_other` next to `body_part` in an existing
+   database (only changes the order you see in Supabase)
+9. `9-list-tags.sql` – adds a description and tags to saved lists (run once, after `6-saved-lists.sql`)
+10. `10-tag-colours.sql` – saved, reusable tags with colours (run once, after `9-list-tags.sql`)
 
 ## Equipment
 
@@ -50,7 +56,9 @@ The Equipment filter in the table shows an exercise when you have something for 
 ## Saved lists
 
 Log in (top right), then **My lists > New list**: tick exercises on the left, drag ⠿ to reorder,
-add a comment to each, and save. **Copy link** gives a link anyone can open to see the list;
+add a comment to each, and save. A list can also have a description and tags (only you see
+those); on **My lists** you can search names, descriptions and tags, or pick a tag to see only those lists. **Manage tags** there lets you
+colour, rename, merge, delete and add tags. **Copy link** gives a link anyone can open to see the list;
 nobody can find a list without its link, and only you can change it.
 
 One-time setup in Supabase:
