@@ -22,7 +22,7 @@ export default function LoginForm() {
   return (
     <form className="login" onSubmit={submit}>
       <h1>Log in</h1>
-      <p className="lede">Only the site owner can log in to make and edit lists.</p>
+      <p className="lede">Log in to use the exercise library and your lists.</p>
       <label>
         Email
         <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}

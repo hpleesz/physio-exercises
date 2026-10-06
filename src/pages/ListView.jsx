@@ -5,8 +5,9 @@ import CopyLinkButton from "../components/CopyLinkButton.jsx";
 import Thumbnail from "../components/Thumbnail.jsx";
 import Tag from "../components/Tag.jsx";
 
-// A saved list as anyone with its link sees it.
-export default function ListView({ id, exercises, status, user }) {
+// A saved list as anyone with its link sees it. The list brings its own exercises' details,
+// so this works without logging in.
+export default function ListView({ id, exercises, user }) {
   const [list, setList] = useState(undefined); // undefined = loading, null = not found
   const [error, setError] = useState("");
   const byId = useMemo(() => new Map(exercises.map((ex) => [ex.id, ex])), [exercises]);
@@ -21,7 +22,7 @@ export default function ListView({ id, exercises, status, user }) {
   }, [id]);
 
   if (error) return <main><p className="error" role="alert">Couldn't load this list: {error}</p></main>;
-  if (list === undefined || status === "loading") return <main><p className="count">Loading…</p></main>;
+  if (list === undefined) return <main><p className="count">Loading…</p></main>;
   if (list === null) {
     return (
       <main>
@@ -31,7 +32,10 @@ export default function ListView({ id, exercises, status, user }) {
     );
   }
 
-  const items = list.items.map((it) => ({ ...it, ex: byId.get(it.exercise_id) })).filter((it) => it.ex);
+  // Until sql/11-lock-library.sql is run, lists don't bring these details; then use the library.
+  const items = list.items
+    .map((it) => ({ ...it, ex: it.exercise ?? byId.get(it.exercise_id) }))
+    .filter((it) => it.ex);
 
   return (
     <main>

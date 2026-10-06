@@ -200,8 +200,13 @@ a.chip { display: inline-flex; align-items: center; text-decoration: none; }
 .page-head h1 { margin: 0; }
 
 /* ── Log in ── */
-.login { max-width: 22rem; display: flex; flex-direction: column; gap: 0.9rem; }
-.login .lede { margin: 0; }
+/* A centred card a little way down the page */
+.login {
+  max-width: 24rem; margin: 6vh auto 0; display: flex; flex-direction: column; gap: 0.9rem;
+  padding: 1.75rem; background: var(--surface); border: 1px solid var(--line); border-radius: 0.75rem;
+}
+.login h1, .login .lede { text-align: center; }
+.login .lede { margin: 0 0 0.25rem; }
 .login label { display: flex; flex-direction: column; gap: 0.25rem; font-weight: 700; font-size: 0.9375rem; }
 .login input, .name-field input, .pane-search, .chosen-list textarea {
   font: inherit; font-weight: normal; padding: 0.55rem 0.7rem; border: 1px solid var(--line);
@@ -210,7 +215,7 @@ a.chip { display: inline-flex; align-items: center; text-decoration: none; }
 .login input:focus, .name-field input:focus, .pane-search:focus, .chosen-list textarea:focus {
   outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft);
 }
-.login button { align-self: flex-start; }
+.login button { align-self: stretch; justify-content: center; margin-top: 0.25rem; }
 
 /* ── My lists ── */
 ul.lists li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.6rem; padding: 0.9rem 0.25rem; }
@@ -425,3 +430,5 @@ ul.tag-suggest li {
 ul.tag-suggest li.active { background: var(--accent-soft); }
 .tag-suggest-new { color: var(--muted); font-size: 0.875rem; }
 .name-field .tag-input input, .name-field .tag-input input:focus { border: 0; box-shadow: none; width: auto; padding: 0.2rem; }
+
+.topnav .brand { font-weight: 700; }

@@ -1,6 +1,7 @@
 # Physio exercise library
 
 A searchable library of physio exercises. React (Vite) frontend on GitHub Pages, data in Supabase.
+The library is only visible when you're logged in; lists you share by link can be opened by anyone.
 
 ## Settings
 
@@ -43,6 +44,8 @@ Requires Node.js 20 or newer.
    database (only changes the order you see in Supabase)
 9. `9-list-tags.sql` – adds a description and tags to saved lists (run once, after `6-saved-lists.sql`)
 10. `10-tag-colours.sql` – saved, reusable tags with colours (run once, after `9-list-tags.sql`)
+11. `11-lock-library.sql` – the library is only visible when logged in; shared list links keep
+    working for everyone (run once, after `6-saved-lists.sql`)
 
 ## Equipment
 
